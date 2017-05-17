@@ -127,7 +127,7 @@
 			glGetProgramiv(object, GL_LINK_STATUS , &success);
 
 			if (!success) {
-				glGetShaderInfoLog(object, 1024, 0, info);
+				glGetProgramInfoLog(object, 1024, 0, info);
 				std::cout <<"fail to link  program "<< info << "\n-- ---------------------------------------- --" << std::endl;
 			}
 		}

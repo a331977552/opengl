@@ -47,6 +47,7 @@
 		std::string geometryCode;
 		
 		try {
+			
 			std::ifstream vf(vShaderFile);
 			std::ifstream ff(fShaderFile);
 			stringstream stream1,stream2;
@@ -55,7 +56,7 @@
 			vertexCode = stream1.str();
 			fragmentCode = stream2.str();
 		
-			if (!gShaderFile)
+			if (gShaderFile)
 			{				
 				std::ifstream gf(gShaderFile);
 				stringstream stream3;
@@ -70,9 +71,9 @@
 		}
 	const GLchar *vShaderCode = vertexCode.c_str();
     const GLchar *fShaderCode = fragmentCode.c_str();
-    const GLchar *gShaderCode = geometryCode.c_str();
+
 	Shader shader;
-	shader.compile(vShaderCode, fShaderCode, gShaderCode);
+	shader.compile(vShaderCode, fShaderCode, geometryCode==""?nullptr: geometryCode.c_str());
 	return shader;
 	}
 	Texture2D ResourceManager::loadTexture2DFromFile(const char *path){

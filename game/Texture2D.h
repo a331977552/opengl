@@ -2,6 +2,8 @@
 #define GLEW_STATIC
 #include <GL\glew.h>
 #include <SOIL\SOIL.h>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include <iostream>
 class Texture2D
 {

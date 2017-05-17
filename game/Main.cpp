@@ -22,9 +22,13 @@ void Main::initEnv() {
 	
 		if (key <= 1024 && key>0)
 		{
-			if (action == GLFW_PRESS) {
-				game->keys[key] = true;
-			}else if(action =GLFW_RELEASE){
+			if (action == GLFW_PRESS) {				
+				game->keys[key] = true; 
+				if (game->keys[GLFW_KEY_ESCAPE]) {
+					//glfwSetWindowShouldClose(window,GLFW_)
+					exit(0);
+				}
+			}else if(action ==GLFW_RELEASE){
 				game->keys[key] = false;
 			}
 		}
@@ -44,7 +48,7 @@ void Main::start() {
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentTime= glfwGetTime();
-		float  deltTime = lastTime - currentTime;
+		float  deltTime = currentTime-lastTime;
 		lastTime = currentTime;
 		game->processInput(deltTime);
 		game->update(deltTime);
