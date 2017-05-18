@@ -35,7 +35,7 @@ public:
 	void update(GLfloat dt);
 	void render();
 	
-	GLboolean checkCircleCollision(GameObject &circle,GameObject &rectangle);
+
 	~Game();
 };
 

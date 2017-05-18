@@ -15,11 +15,14 @@ public:
 	void draw(SpriteRenderer &renderer);
 	GLboolean isComplete();
 	~GameLevel();
-
-
+	 vector<GameObject>& getObjects();
+	 
+	 void doCollision(GameObject &obj);
+	 void doCircleCollision(GameObject &obj);
 private :
-	vector<vector<int>> bricks;
 	vector<GameObject> objects;
+	vector<vector<int>> bricks;
+	
 	void init(float width,float height);
 };
 

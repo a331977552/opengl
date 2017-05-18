@@ -32,6 +32,51 @@ GameLevel::GameLevel(const char * file, float width, float height)
 
 }
 
+void GameLevel::doCollision(GameObject &ball)
+{
+
+	for (GameObject &obj :objects)
+	{
+		bool collided = obj.boundingBox.isContain(ball.boundingBox);
+
+		if (!obj.isSolid && !obj.isDestory  &&collided) {
+
+			obj.isDestory = true;
+		}
+
+	}
+
+}
+
+void GameLevel::doCircleCollision(GameObject &ball)
+{
+	glm::vec2 	ballCenter=  ball.size.x/2 + ball.position;
+	for (GameObject &obj : objects)
+	{
+
+
+		if (!obj.isSolid && !obj.isDestory) {
+
+			glm::vec2 aabbHalfExtents(obj.size.x / 2, obj.size.y / 2);
+			glm::vec2 center = obj.position + aabbHalfExtents;
+
+			glm::vec2  difference = ballCenter - center;
+			glm::vec2 clamped = glm::clamp(difference, -aabbHalfExtents, aabbHalfExtents);
+			glm::vec2 closest= center + clamped;
+			if (glm::length(ballCenter-closest)<=ball.size.x/2  )
+			{
+
+				obj.isDestory = true;
+			}
+
+			
+		}
+
+	}
+
+
+}
+
 void GameLevel::init(float width, float height)
 {
 	float unitWidth =  width/ static_cast<float> (bricks.at(0).size());
@@ -44,8 +89,8 @@ void GameLevel::init(float width, float height)
 			GameObject  obj;
 			glm::vec2 pos(y*unitWidth, x*unitHeight);
 			glm::vec2 size(unitWidth, unitHeight);
-			obj.size = size;
-			obj.position = pos;
+			obj.setSize( size);
+			obj.setPosition(pos);
 
 			if (code == 1) {
 				obj.sprite = ResourceManager::getInstance().getTexture2D("brick_solid");
@@ -102,4 +147,10 @@ GLboolean GameLevel::isComplete()
 
 GameLevel::~GameLevel()
 {
+}
+
+ vector<GameObject>& GameLevel::getObjects()
+{
+
+	return objects;
 }

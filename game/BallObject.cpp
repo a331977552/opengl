@@ -29,6 +29,8 @@ glm::vec2 BallObject::move(GLfloat dt, GLfloat windowWidth)
 			position.y = 0;
 			velocity.y = -velocity.y;
 		}
+		boundingBox.x = position.x;
+		boundingBox.y = position.y;
 
 
 

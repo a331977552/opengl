@@ -70,7 +70,8 @@ void Game::processInput(GLfloat dt) {
 	}
 void Game::update(GLfloat dt) {
 		ball->move(dt, width);
-	}
+		gameLevels[currentLevel].doCircleCollision(*ball);
+}
 void Game::render() {
 		sprite->drawSprite(ResourceManager::getInstance().getTexture2D("background"), glm::vec2(0, 0), glm::vec2(width, height));
 	if (state == GameState::ACTIVE) {
@@ -85,12 +86,7 @@ void Game::render() {
 
 }
 
-GLboolean Game::checkCircleCollision(GameObject &circle, GameObject &rectangle)
-{
-	circle
 
-
-}
 
 Game::~Game() {
 	
