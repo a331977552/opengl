@@ -10,8 +10,10 @@ void Game::init() {
 	ResourceManager::getInstance().loadTexture2D("resources/brick_soild.png", "brick_solid");
 	ResourceManager::getInstance().loadTexture2D("resources/background.jpg", "background");
 	ResourceManager::getInstance().loadTexture2D("resources/paddle.png", "paddle");
-
-
+	
+    glm::vec2 paddlePos=glm::vec2(width / 2 - playerSize.x / 2, height - playerSize.y);
+	ball = new BallObject(paddlePos+glm::vec2(playerSize.x / 2-ballSize.x/2,-ballSize.y),ballSize,tex);
+	ball->velocity = ball_velocity;
 
 	GameLevel level1("resources/level1.cfg", (float)width, height*0.5);
 	GameLevel level2("resources/level2.cfg", (float)width, height*0.5);
@@ -29,7 +31,7 @@ void Game::init() {
 
 
 	glm::mat4 projection = glm::ortho(0.f, static_cast<GLfloat>(width), static_cast<GLfloat>(height), 0.f, -1.0f, 1.0f);
-	paddle = new GameObject(glm::vec2(width/2-playerSize.x/2,height-playerSize.y), playerSize, ResourceManager::getInstance().getTexture2D("paddle"));
+	paddle = new GameObject(paddlePos, playerSize, ResourceManager::getInstance().getTexture2D("paddle"));
 
 	hero.use().setMatrix4("projection", projection);
 	hero.setInt("tex", 0);
@@ -57,6 +59,9 @@ void Game::processInput(GLfloat dt) {
 			}
 			
 		}
+		if (keys[GLFW_KEY_SPACE]) {
+			ball->isStuck = false;
+		}
 	
 	}
 
@@ -64,15 +69,29 @@ void Game::processInput(GLfloat dt) {
 
 	}
 void Game::update(GLfloat dt) {
-
+		ball->move(dt, width);
 	}
 void Game::render() {
 		sprite->drawSprite(ResourceManager::getInstance().getTexture2D("background"), glm::vec2(0, 0), glm::vec2(width, height));
 	if (state == GameState::ACTIVE) {
 		gameLevels[currentLevel].draw(*sprite);
 		paddle->draw(*sprite);
+		if (ball->isStuck) {
+		ball->position = paddle->position + glm::vec2(playerSize.x / 2 - ballSize.x / 2, -ballSize.y), ballSize;
+		}
+		ball->draw(*sprite);
 	}
+
+
 }
+
+GLboolean Game::checkCircleCollision(GameObject &circle, GameObject &rectangle)
+{
+	circle
+
+
+}
+
 Game::~Game() {
 	
 }

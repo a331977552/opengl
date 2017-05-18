@@ -5,6 +5,7 @@
 #include "ResourceManager.h"
 #include "SpriteRenderer.h"
 #include "GameLevel.h"
+#include "BallObject.h"
 enum GameState {
 	ACTIVE,
 	MENU,
@@ -12,13 +13,18 @@ enum GameState {
 
 };
 const glm::vec2 playerSize(100,20);
+const glm::vec2 ballSize(30, 30);
+
 const float VELOCITY = 500.f; 
+const glm::vec2 ball_velocity =glm::vec2(100.f,-300.f);
+
 class Game
 {
 public:
 	vector<GameLevel> gameLevels;
 	int currentLevel = 0;
 	SpriteRenderer *sprite;
+	BallObject *ball;
 	GameState state;
 	GLboolean keys[1024];
 	GLuint width, height;
@@ -28,6 +34,8 @@ public:
 	void processInput(GLfloat dt);
 	void update(GLfloat dt);
 	void render();
+	
+	GLboolean checkCircleCollision(GameObject &circle,GameObject &rectangle);
 	~Game();
 };
 
