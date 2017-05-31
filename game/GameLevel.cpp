@@ -48,33 +48,147 @@ void GameLevel::doCollision(GameObject &ball)
 
 }
 
-void GameLevel::doCircleCollision(GameObject &ball)
+GameLevel::collision GameLevel::checkCollision(GameObject &obj, GameObject &ball)
 {
-	glm::vec2 	ballCenter=  ball.size.x/2 + ball.position;
-	for (GameObject &obj : objects)
+	
+	glm::vec2 size=	obj.getSize();
+	glm::vec2 half_size(size.x / 2,size.y / 2);
+
+	glm::vec2 objCenter =	obj.position + half_size;
+	glm::vec2 ballCenter=  ball.position + glm::vec2(ball.getSize().x / 2, ball.getSize().x/2);
+	glm::vec2 difference =   ballCenter-objCenter;
+	glm::vec2 diff= glm::clamp(difference, -half_size, half_size);
+	glm::vec2 closest=	diff + objCenter;
+	difference =	closest - ballCenter;
+	float  len=glm::length(difference);
+	
+	if (glm::length(difference) <= ball.size.x / 2)
 	{
+	
+		return std::make_tuple(GL_TRUE, getVectorDirection(difference), difference);
+	}
+		return std::make_tuple(GL_FALSE,Direction::UP,glm::vec2(0.f,0.f));
+}
+void  GameLevel::doPaddCollision(GameObject &ball, GameObject &paddle) {
+	BallObject balla= static_cast<BallObject&>(ball);
+	if (balla.isStuck) {
+		return;
+	}
+	collision c = checkCollision(paddle, ball);
 
 
-		if (!obj.isSolid && !obj.isDestory) {
+	float radius = ball.size.x / 2;	
+	if (std::get<0>(c)) {
+	
+		Direction dir = std::get<1>(c);
+		if (dir == Direction::UP || dir == Direction::DOWN) {
+			ball.velocity.y = -ball.velocity.y;
+			glm::vec2 difference = std::get<2>(c);
 
-			glm::vec2 aabbHalfExtents(obj.size.x / 2, obj.size.y / 2);
-			glm::vec2 center = obj.position + aabbHalfExtents;
+			glm::vec2 Paddlecenter= paddle.getPosisiton() + glm::vec2(paddle.getSize().x / 2,paddle.getSize().y / 2);
+			glm::vec2 ballCenter = ball.getPosisiton() + glm::vec2(ball.getSize().x / 2, ball.getSize().y / 2);
+			float percentage = (ballCenter.x - Paddlecenter.x)/paddle.getSize().x;
 
-			glm::vec2  difference = ballCenter - center;
-			glm::vec2 clamped = glm::clamp(difference, -aabbHalfExtents, aabbHalfExtents);
-			glm::vec2 closest= center + clamped;
-			if (glm::length(ballCenter-closest)<=ball.size.x/2  )
-			{
+			glm::vec2 oldVelocity = ball.velocity;
 
-				obj.isDestory = true;
+
+			float strength = 2.0f;
+			ball.velocity.x =  100.f*percentage*strength;
+			GLfloat penetration = glm::length(radius - difference);
+			ball.velocity=glm::normalize(ball.velocity)*glm::length(oldVelocity);
+
+
+			if (dir == Direction::UP) {
+				ball.position.y -= penetration;			
 			}
-
-			
+			else {
+				ball.position.y += penetration;
+			}
 		}
-
+		else {
+			ball.velocity.x = -ball.velocity.x;
+			glm::vec2 difference = std::get<2>(c);
+			GLfloat penetration = glm::length(radius - difference);
+			if (dir == Direction::LEFT) {
+				ball.position.x += penetration;
+			}
+			else {
+				ball.position.y -= penetration;
+			}
+		}
 	}
 
 
+}
+void GameLevel::doCircleCollision(GameObject &ball)
+{
+	
+
+	float radius=ball.size.x / 2;
+	for (GameObject &obj : objects)
+	{
+
+		if (!obj.isDestory) {
+			
+			collision c=checkCollision(obj, ball);
+			if (std::get<0>(c)) {
+					std::cout << "success" << std::endl;
+					if (!obj.isSolid)
+					{
+						obj.isDestory = true;
+					}
+					Direction dir= std::get<1>(c);
+				if (dir == Direction::UP ||dir == Direction::DOWN ) {
+					ball.velocity.y = -ball.velocity.y;
+					glm::vec2 difference = std::get<2>(c);
+					GLfloat penetration = glm::length(radius - difference);
+					if (dir == Direction::UP) {
+						ball.position.y -= penetration;
+					}
+					else {
+						ball.position.y += penetration;
+					}
+				}
+				else {
+					ball.velocity.x = -ball.velocity.x;
+					glm::vec2 difference = std::get<2>(c);
+					GLfloat penetration = glm::length(radius - difference);
+					if (dir == Direction::LEFT) {
+						ball.position.x += penetration;
+					}
+					else {
+						ball.position.y -= penetration;
+					}
+				}			
+			}							
+		}
+	}
+
+}
+
+Direction GameLevel::getVectorDirection(glm::vec2 target)
+{
+	glm::vec2 compass[] = {
+		glm::vec2(0.0f,1.f),
+		glm::vec2(1.0f,0.f),
+		glm::vec2(0.0f,-1.f),
+		glm::vec2(-1.0f,0.f)
+	};
+
+	glm::vec2  t= glm::normalize(target);
+	float max = 0;
+	int bestMatch = -1;
+	for (int i = 0; i < 4; i++) {
+
+
+		float dotProduct= glm::dot(t, compass[i]);
+		if (dotProduct > max) {
+			max = dotProduct;
+			bestMatch = i;
+		}
+
+	}
+	return (Direction)bestMatch;
 }
 
 void GameLevel::init(float width, float height)
@@ -133,6 +247,34 @@ void GameLevel::draw(SpriteRenderer &renderer)
 	}
 
 
+}
+
+void GameLevel::reload(const char * file, float width, float height)
+{
+	ifstream open(file);
+	if (!open.is_open()) {
+
+		std::cout << "fail to open  file:  " << file << std::endl;
+		return;
+	}
+	int code;
+	std::string line;
+	objects.clear();
+	bricks.clear();
+	while (std::getline(open, line)) {
+
+		vector<int > row;
+		stringstream  ststream;
+
+		ststream << line;
+		while (ststream >> code) {
+			row.push_back(code);
+		}
+		bricks.push_back(row);
+	}
+
+	if (bricks.size() > 0)
+		init(width, height);
 }
 
 GLboolean GameLevel::isComplete()

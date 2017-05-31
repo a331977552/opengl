@@ -6,6 +6,7 @@
 #include "SpriteRenderer.h"
 #include "GameLevel.h"
 #include "BallObject.h"
+#include "ParticleGenerator.h"
 enum GameState {
 	ACTIVE,
 	MENU,
@@ -21,7 +22,8 @@ const glm::vec2 ball_velocity =glm::vec2(100.f,-300.f);
 class Game
 {
 public:
-	vector<GameLevel> gameLevels;
+	ParticleGenerator * particleGenerator;
+	vector<GameLevel*> gameLevels;
 	int currentLevel = 0;
 	SpriteRenderer *sprite;
 	BallObject *ball;
@@ -32,6 +34,7 @@ public:
 	Game(GLuint widht,GLuint height);
 	void init();
 	void processInput(GLfloat dt);
+	void resetGame();
 	void update(GLfloat dt);
 	void render();
 	
