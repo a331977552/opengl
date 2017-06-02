@@ -21,13 +21,16 @@ public:
 	void setVector2f(const GLchar * name,const  glm::vec2 &value,GLboolean useShader=false);
 	void setVector3f(const GLchar * name,const GLfloat x,const GLfloat y,const GLfloat z,GLboolean useShader=false);
 	void setVector3f(const GLchar * name,const  glm::vec3 &value,GLboolean useShader=false);
-
+	void Shader::setVector2fv(const GLchar * name,int count,const float * data, GLboolean useShader=false);
+		
+	
 	void setVector4f(const GLchar * name,const GLfloat x,const GLfloat y,const GLfloat z,const GLfloat w,GLboolean useShader=false);
 	void setVector4f(const GLchar * name,const  glm::vec4 &value,GLboolean useShader=false);
 	void setMatrix4(const GLchar * name,const  glm::mat4 &value,GLboolean useShader=false);
 
 	~Shader();
-private :
+	void setBool(const GLchar * param1, bool param2, bool useShader=false);
+private:
 	void checkCompileErrors(GLuint object, std::string type);
 
 };

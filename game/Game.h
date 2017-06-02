@@ -7,6 +7,9 @@
 #include "GameLevel.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
+#include "SimpleAudioManager.h"
+#include "PostProcessor.h"
+#include "TextRender.h"
 enum GameState {
 	ACTIVE,
 	MENU,
@@ -22,6 +25,8 @@ const glm::vec2 ball_velocity =glm::vec2(100.f,-300.f);
 class Game
 {
 public:
+	PostProcessor * processor;
+	TextRender *texRender;
 	ParticleGenerator * particleGenerator;
 	vector<GameLevel*> gameLevels;
 	int currentLevel = 0;

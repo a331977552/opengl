@@ -20,7 +20,7 @@
 		fragmentShader =glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragmentShader, 1, &fragmeSource, NULL);
 		glCompileShader(fragmentShader);
-		checkCompileErrors(vertexShader, "fragment");
+		checkCompileErrors(fragmentShader, "fragment");
 
 
 		if (geometrySource != nullptr) {
@@ -66,6 +66,13 @@
 		glUniform2f(glGetUniformLocation(ID, name),x,y);
 	
 	}
+	void Shader::setVector2fv(const GLchar * name,int count,const float * data, GLboolean useShader) {
+		if (useShader) {
+			use();
+		}
+		glUniform2fv(glGetUniformLocation(ID, name),count,data);
+	}
+
 	void Shader::setVector2f(const GLchar * name,const  glm::vec2 &value,GLboolean useShader){
 	
 		if (useShader) {
@@ -120,7 +127,15 @@
 	 Shader::~Shader(){
 	}
 
-	void  Shader::checkCompileErrors(GLuint object, std::string type){
+	 void Shader::setBool(const GLchar * name, bool value,bool useShader)
+	 {
+		 if (useShader) {
+			 use();
+		 }
+		 glUniform1i(glGetUniformLocation(ID, name), value);
+	 }
+
+	 void  Shader::checkCompileErrors(GLuint object, std::string type) {
 		GLint success;
 		GLchar info[1024];
 		if (type == "program") {

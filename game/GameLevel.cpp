@@ -5,8 +5,9 @@
 
 
 
-GameLevel::GameLevel(const char * file, float width, float height)
-{
+GameLevel::GameLevel(const char * file, float width, float height,PostProcessor &postProcessor)
+:postProcessor(postProcessor),listener(NULL),score(0){
+
 	ifstream open(file);
 	if (!open.is_open()) {
 
@@ -30,6 +31,11 @@ GameLevel::GameLevel(const char * file, float width, float height)
 	if (bricks.size() > 0)
 		init(width, height);
 
+}
+
+void GameLevel::setOnBrickDestoriedListener(OnBrickDestoriedListener listener)
+{
+	this->listener = listener;
 }
 
 void GameLevel::doCollision(GameObject &ball)
@@ -120,10 +126,11 @@ void  GameLevel::doPaddCollision(GameObject &ball, GameObject &paddle) {
 
 
 }
+
 void GameLevel::doCircleCollision(GameObject &ball)
 {
 	
-
+	
 	float radius=ball.size.x / 2;
 	for (GameObject &obj : objects)
 	{
@@ -132,12 +139,24 @@ void GameLevel::doCircleCollision(GameObject &ball)
 			
 			collision c=checkCollision(obj, ball);
 			if (std::get<0>(c)) {
+				postProcessor.shake = true;
+				postProcessor.shakeTime = 0.05f;
 					std::cout << "success" << std::endl;
 					if (!obj.isSolid)
 					{
+						SimpleAudioManager::getInstance().getSoundEngine()->play2D("resources/bleep.mp3");
 						obj.isDestory = true;
+						score++;
+						if (listener ) {
+							listener();
+						}
 					}
-					Direction dir= std::get<1>(c);
+					else {
+
+						SimpleAudioManager::getInstance().getSoundEngine()->play2D("resources/solid.wav");
+					}
+				
+	Direction																																																		dir = std::get<1>(c);
 				if (dir == Direction::UP ||dir == Direction::DOWN ) {
 					ball.velocity.y = -ball.velocity.y;
 					glm::vec2 difference = std::get<2>(c);
@@ -251,6 +270,7 @@ void GameLevel::draw(SpriteRenderer &renderer)
 
 void GameLevel::reload(const char * file, float width, float height)
 {
+	score = 0;
 	ifstream open(file);
 	if (!open.is_open()) {
 

@@ -1,5 +1,6 @@
 #include "Texture2D.h"
 
+	
 	void Texture2D::generate(const  GLchar *const str) {
 		this->width = width;
 		this->height = height;
@@ -30,7 +31,25 @@
 		
 	}
 
-	Texture2D::Texture2D():width(0),height(0),wrap_S(GL_REPEAT),wrap_T(GL_REPEAT),filter_min(GL_LINEAR),filter_max(GL_LINEAR){
+	void Texture2D::generateEmpty(GLuint width, GLuint height)
+	{
+		this->width = width;
+		this->height = height;
+		this->channels = 3;
+		
+		glGenTextures(1, &ID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+	}
+
+	Texture2D::Texture2D() :width(0), height(0), wrap_S(GL_REPEAT), wrap_T(GL_REPEAT), filter_min(GL_LINEAR), filter_max(GL_LINEAR) {
 
 	}
 	Texture2D::~Texture2D(){

@@ -18,7 +18,7 @@ public:
 	GLuint filter_max;
 	void generate( const  GLchar *const str);
 	void bind()const;
-
+	void generateEmpty(GLuint width, GLuint height);
 	Texture2D();
 	~Texture2D();
 };

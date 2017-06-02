@@ -4,24 +4,25 @@ Game::Game(GLuint width, GLuint height):state(GameState::ACTIVE),width(width),he
 
 	}
 void Game::init() {
-	Shader  hero=ResourceManager::getInstance().loadShader("shaders/sprite.vs", "shaders/sprite.fs", nullptr,"hero");
-	Shader  particle=ResourceManager::getInstance().loadShader("shaders/particle.vs", "shaders/particle.fs", nullptr, "particle");
+	Shader  hero = ResourceManager::getInstance().loadShader("shaders/sprite.vs", "shaders/sprite.fs", nullptr, "hero");
+	Shader  particle = ResourceManager::getInstance().loadShader("shaders/particle.vs", "shaders/particle.fs", nullptr, "particle");
+	Shader  postprocessShader = ResourceManager::getInstance().loadShader("shaders/postprocessShader.vs", "shaders/postprocessShader.fs", nullptr, "particle");
 
-	Texture2D  tex=ResourceManager::getInstance().loadTexture2D("resources/hero.png","hero");
+	Texture2D  tex = ResourceManager::getInstance().loadTexture2D("resources/hero.png", "hero");
 	ResourceManager::getInstance().loadTexture2D("resources/particle.png", "particle");
 
 	ResourceManager::getInstance().loadTexture2D("resources/brick.png", "brick");
 	ResourceManager::getInstance().loadTexture2D("resources/brick_soild.png", "brick_solid");
 	ResourceManager::getInstance().loadTexture2D("resources/background.jpg", "background");
 	ResourceManager::getInstance().loadTexture2D("resources/paddle.png", "paddle");
-	
- 
 
-	GameLevel *level1=new GameLevel("resources/level1.cfg", (float)width, height*0.5);
-	GameLevel *level2=new GameLevel("resources/level2.cfg", (float)width, height*0.5);
-	GameLevel *level3=new GameLevel("resources/level3.cfg", (float)width, height*0.5);
-	GameLevel *level4=new GameLevel("resources/level4.cfg", (float)width, height*0.5);
-	GameLevel *level5=new GameLevel("resources/level5.cfg", (float)width, height*0.5);
+
+	processor = new PostProcessor(postprocessShader, width, height);
+	GameLevel *level1 = new GameLevel("resources/level1.cfg", (float)width, (float)(height*0.5), *processor);
+	GameLevel *level2 = new GameLevel("resources/level2.cfg", (float)width, (float)(height*0.5), *processor);
+	GameLevel *level3 = new GameLevel("resources/level3.cfg", (float)width, (float)(height*0.5), *processor);
+	GameLevel *level4 = new GameLevel("resources/level4.cfg", (float)width, (float)(height*0.5), *processor);
+	GameLevel *level5 = new GameLevel("resources/level5.cfg", (float)width, (float)(height*0.5), *processor);
 	gameLevels.push_back(level1);
 	gameLevels.push_back(level2);
 	gameLevels.push_back(level3);
@@ -30,10 +31,10 @@ void Game::init() {
 	currentLevel = 0;
 
 
-
-
 	glm::mat4 projection = glm::ortho(0.f, static_cast<GLfloat>(width), static_cast<GLfloat>(height), 0.f, -1.0f, 1.0f);
-	
+
+	texRender = new TextRender(width, height);
+
 	glm::vec2 paddlePos = glm::vec2(width / 2 - playerSize.x / 2, height - playerSize.y);
 	ball = new BallObject(paddlePos + glm::vec2(playerSize.x / 2 - ballSize.x / 2, -ballSize.y), ballSize, tex);
 	ball->velocity = ball_velocity;
@@ -42,11 +43,22 @@ void Game::init() {
 	hero.use().setMatrix4("projection", projection);
 	hero.setInt("tex", 0);
 
-	 sprite = new SpriteRenderer(hero);
-	 particle.setMatrix4("projection", projection,true);
-	 particleGenerator = new ParticleGenerator(particle,ResourceManager::getInstance().getTexture2D("particle"),500);
-	
+	sprite = new SpriteRenderer(hero);
+	particle.setMatrix4("projection", projection, true);
+	particleGenerator = new ParticleGenerator(particle, ResourceManager::getInstance().getTexture2D("particle"), 500);
+	irrklang::ISoundEngine *soundEngine = SimpleAudioManager::getInstance().getSoundEngine();
 
+	soundEngine->play2D("resources/breakout.mp3", true);
+	soundEngine->addSoundSourceFromFile("resources/solid.wav", irrklang::E_STREAM_MODE::ESM_AUTO_DETECT, true);
+	soundEngine->addSoundSourceFromFile("resources/bleep.mp3", irrklang::E_STREAM_MODE::ESM_AUTO_DETECT, true);
+	soundEngine->addSoundSourceFromFile("resources/powerup.wav", irrklang::E_STREAM_MODE::ESM_AUTO_DETECT, true);
+
+	gameLevels[currentLevel]->setOnBrickDestoriedListener([](void)	{
+			
+		
+				
+	}
+		);
 }
 void Game::processInput(GLfloat dt) {
 	if (state == GameState::ACTIVE) {
@@ -97,8 +109,18 @@ void Game::update(GLfloat dt) {
 		ball->move(dt, width);
 		gameLevels[currentLevel]->doPaddCollision(*ball,*paddle);
 		gameLevels[currentLevel]->doCircleCollision(*ball);		
+		if (processor->shake) {
+			processor->shakeTime -= dt;
+			if (processor->shakeTime <= 0.0f) {
+				processor->shake = false;
+			}
+		}
+
+
 }
 void Game::render() {
+	
+	processor->beginRender();
 	sprite->drawSprite(ResourceManager::getInstance().getTexture2D("background"), glm::vec2(0, 0), glm::vec2(width, height));
 	if (state == GameState::ACTIVE) {
 		gameLevels[currentLevel]->draw(*sprite);
@@ -109,6 +131,10 @@ void Game::render() {
 		particleGenerator->draw();
 		ball->draw(*sprite);
 	}
+		processor->endRender();
+		processor->render(glfwGetTime());
+		
+		texRender->renderText("current score:"+std::to_string(gameLevels[currentLevel]->score), 5,5, 1.0f, glm::vec3(1.0f, 1.0f, 0));
 }
 
 
